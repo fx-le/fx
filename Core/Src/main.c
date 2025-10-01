@@ -104,14 +104,21 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
+    HAL_TIM_Base_Start(&htim1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    ticks=HAL_GetTick();
+    if(__HAL_TIM_GetCounter(&htim1)>5000)
+    {
+        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
+    }
+    else{
+        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
+    }
+    /*ticks=HAL_GetTick();
     sw=read_sw();
     if(mode==0)
     {
@@ -147,7 +154,7 @@ int main(void)
             }
             lticks=ticks;
         }
-    }
+    }*/
 
 
     /* USER CODE END WHILE */
