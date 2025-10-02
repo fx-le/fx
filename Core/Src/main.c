@@ -19,11 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usart.h"
+#include "stm32f4xx_hal_uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,9 +81,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-    lticks=HAL_GetTick();
-    HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-    HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
+    lticks = HAL_GetTick();
+    HAL_GPIO_WritePin(LEDG_GPIO_Port, LEDG_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_RESET);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -102,58 +104,23 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM1_Init();
+  MX_UART7_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t tx_msg[]="RoboMaster";
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    ticks=HAL_GetTick();
-    sw=read_sw();
-    if(mode==0)
-    {
-        HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-        if(ticks-lticks>1000)
-        {
-            if(modeR==1)
-            {
-                HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-                modeR=0;
-            }
-            else
-            {
-                HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
-                modeR=1;
-            }
-            lticks=ticks;
-        }
-    }
-    else{
-        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-        if(ticks-lticks>1000)
-        {
-            if(modeG==1)
-            {
-                HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-                modeG=0;
-            }
-            else
-            {
-                HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
-                modeG=1;
-            }
-            lticks=ticks;
-        }
-    }
+    while (1) {
+        HAL_UART_Transmit(&huart7, tx_msg, 10, 1000);
+        HAL_Delay(1000);
+
 
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
