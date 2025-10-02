@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <math.h>
 #include "main.h"
 #include "tim.h"
 #include "gpio.h"
@@ -80,7 +81,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
     lticks=HAL_GetTick();
-    HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
     HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
   /* USER CODE END 1 */
 
@@ -104,57 +105,61 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-    HAL_TIM_Base_Start(&htim1);
+    /*HAL_TIM_Base_Start(&htim1);*/
+    HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(__HAL_TIM_GetCounter(&htim1)>5000)
-    {
-        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-    }
-    else{
-        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
-    }
-    /*ticks=HAL_GetTick();
-    sw=read_sw();
-    if(mode==0)
-    {
-        HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-        if(ticks-lticks>1000)
-        {
-            if(modeR==1)
-            {
-                HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-                modeR=0;
-            }
-            else
-            {
-                HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
-                modeR=1;
-            }
-            lticks=ticks;
-        }
-    }
-    else{
-        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-        if(ticks-lticks>1000)
-        {
-            if(modeG==1)
-            {
-                HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-                modeG=0;
-            }
-            else
-            {
-                HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
-                modeG=1;
-            }
-            lticks=ticks;
-        }
-    }*/
+      uint32_t arr_value=__HAL_TIM_GET_AUTORELOAD(&htim1)+1;
+      uint32_t brightness=arr_value*sinf(4*HAL_GetTick()/1000.f)-1;
+      __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_2,brightness);
+      /*if(__HAL_TIM_GetCounter(&htim1)>5000)
+      {
+          HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
+      }
+      else{
+          HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
+      }
+      ticks=HAL_GetTick();
+      sw=read_sw();
+      if(mode==0)
+      {
+          HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
+          if(ticks-lticks>1000)
+          {
+              if(modeR==1)
+              {
+                  HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
+                  modeR=0;
+              }
+              else
+              {
+                  HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
+                  modeR=1;
+              }
+              lticks=ticks;
+          }
+      }
+      else{
+          HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
+          if(ticks-lticks>1000)
+          {
+              if(modeG==1)
+              {
+                  HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
+                  modeG=0;
+              }
+              else
+              {
+                  HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
+                  modeG=1;
+              }
+              lticks=ticks;
+          }
+      }*/
 
 
     /* USER CODE END WHILE */
