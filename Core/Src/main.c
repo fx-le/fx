@@ -46,9 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t ticks,lticks,sw1,sw2;
-uint8_t sw,mode=0,modeG=0,modeR=1;
-int read_sw();
+uint8_t rx_msg[4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,18 +57,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int read_sw()
-{
-    sw1=HAL_GPIO_ReadPin(KEY_GPIO_Port,KEY_Pin);
-    HAL_Delay(20);
-    sw2 = HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin);
-    if (sw1 == 0&&sw2 == 1)
-    {
-            mode = 1 - mode;
-            return 1;
-    }
-    return 0;
-}
 /* USER CODE END 0 */
 
 /**
@@ -81,9 +67,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-    lticks = HAL_GetTick();
-    HAL_GPIO_WritePin(LEDG_GPIO_Port, LEDG_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(LEDR_GPIO_Port, LEDR_Pin, GPIO_PIN_RESET);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -107,6 +90,7 @@ int main(void)
   MX_UART7_Init();
   /* USER CODE BEGIN 2 */
   uint8_t tx_msg[]="RoboMaster";
+  HAL_UART_Receive_IT(&huart7,rx_msg,1);
   /* USER CODE END 2 */
 
   /* Infinite loop */

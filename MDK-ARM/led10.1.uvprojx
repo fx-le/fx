@@ -526,6 +526,11 @@
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32f4xx_hal_msp.c</FilePath>
             </File>
+            <File>
+              <FileName>callback2.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\Core\Src\callback2.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
