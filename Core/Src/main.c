@@ -46,7 +46,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t rx_msg[4];
+uint8_t rx_msg[10];
+uint8_t tx_msg[10];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,16 +90,13 @@ int main(void)
   MX_GPIO_Init();
   MX_UART7_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t tx_msg[]="RoboMaster";
-  HAL_UART_Receive_IT(&huart7,rx_msg,1);
+  /*HAL_UART_Receive_IT(&huart7,rx_msg,4);*/
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
     while (1) {
-        HAL_UART_Transmit(&huart7, tx_msg, 10, 1000);
-        HAL_Delay(1000);
-
+      HAL_UART_Receive_IT(&huart7,rx_msg,10);
 
 
     /* USER CODE END WHILE */
