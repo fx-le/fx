@@ -17,14 +17,14 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <math.h>
 #include "main.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,7 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+uint8_t mode;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,9 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t ticks,lticks,sw1,sw2;
-uint8_t sw,mode=0,modeG=0,modeR=1;
-int read_sw();
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,18 +56,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int read_sw()
-{
-    sw1=HAL_GPIO_ReadPin(KEY_GPIO_Port,KEY_Pin);
-    HAL_Delay(20);
-    sw2 = HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin);
-    if (sw1 == 0&&sw2 == 1)
-    {
-            mode = 1 - mode;
-            return 1;
-    }
-    return 0;
-}
 /* USER CODE END 0 */
 
 /**
@@ -80,9 +66,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-    lticks=HAL_GetTick();
-    HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
+	mode=2;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -104,9 +88,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
+  MX_UART7_Init();
   /* USER CODE BEGIN 2 */
-    /*HAL_TIM_Base_Start(&htim1);*/
-    HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_2);
+  HAL_TIM_Base_Start_IT(&htim1);
+  HAL_TIM_PWM_Start(&htim1,TIM_CHANNEL_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,58 +99,8 @@ int main(void)
   while (1)
   {
       uint32_t arr_value=__HAL_TIM_GET_AUTORELOAD(&htim1)+1;
-      uint32_t brightness=arr_value*sinf(1*HAL_GetTick()/1000.f)-1;
+      uint32_t brightness=arr_value*sinf(mode*HAL_GetTick()/1000.f)-1;
       __HAL_TIM_SetCompare(&htim1,TIM_CHANNEL_2,brightness);
-      /*if(HAL_GPIO_ReadPin(KEY_GPIO_Port,KEY_Pin)==GPIO_PIN_SET)
-			{
-          HAL_IWDG_Refresh(&hiwdg);
-			}*/
-      /*if(__HAL_TIM_GetCounter(&htim1)>5000)
-      {
-          HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-      }
-      else{
-          HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
-      }
-      ticks=HAL_GetTick();
-      sw=read_sw();
-      if(mode==0)
-      {
-          HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-          if(ticks-lticks>1000)
-          {
-              if(modeR==1)
-              {
-                  HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-                  modeR=0;
-              }
-              else
-              {
-                  HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
-                  modeR=1;
-              }
-              lticks=ticks;
-          }
-      }
-      else{
-          HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-          if(ticks-lticks>1000)
-          {
-              if(modeG==1)
-              {
-                  HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-                  modeG=0;
-              }
-              else
-              {
-                  HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
-                  modeG=1;
-              }
-              lticks=ticks;
-          }
-      }*/
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -190,12 +125,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 6;
   RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
