@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "can.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -44,9 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t ticks,lticks,sw1,sw2;
-uint8_t sw,mode=0,modeG=0,modeR=1;
-int read_sw();
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,18 +56,26 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int read_sw()
-{
-    sw1=HAL_GPIO_ReadPin(KEY_GPIO_Port,KEY_Pin);
-    HAL_Delay(20);
-    sw2 = HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin);
-    if (sw1 == 0&&sw2 == 1)
-    {
-            mode = 1 - mode;
-            return 1;
-    }
-    return 0;
-}
+uint8_t rx_data[8];
+uint8_t tx_data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+uint32_t can_tx_mail_box_;
+CAN_RxHeaderTypeDef rx_header;
+CAN_TxHeaderTypeDef tx_header = {
+        .StdId = 0x200,
+        .ExtId = 0,
+        .IDE = CAN_ID_STD,
+        .RTR = CAN_RTR_DATA,
+        .DLC = 8,
+        .TransmitGlobalTime = DISABLE };
+CAN_FilterTypeDef filter_config = { .FilterIdHigh = 0x0000,
+        .FilterIdLow = 0x0000,
+        .FilterMaskIdHigh = 0x0000,
+        .FilterMaskIdLow = 0x0000,
+        .FilterFIFOAssignment = CAN_FILTER_FIFO0,
+        .FilterBank = 0,
+        .FilterMode = CAN_FILTERMODE_IDMASK,
+        .FilterScale = CAN_FILTERSCALE_32BIT,
+        .FilterActivation = ENABLE };
 /* USER CODE END 0 */
 
 /**
@@ -79,9 +86,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-    lticks=HAL_GetTick();
-    HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-    HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -102,53 +107,23 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM1_Init();
+  MX_CAN1_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-
+  /* CAN过滤规则配置*/
+  HAL_CAN_ConfigFilter(&hcan1, &filter_config);
+  /*启动CAN控制器 */
+  HAL_CAN_Start(&hcan1);
+  /*激活CAN接收中断，FIFO8中有待处理报文时触发中断*/
+  HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
+  /* 启动timer6并使能中断*/
+  HAL_TIM_Base_Start_IT(&htim6);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    ticks=HAL_GetTick();
-    sw=read_sw();
-    if(mode==0)
-    {
-        HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-        if(ticks-lticks>1000)
-        {
-            if(modeR==1)
-            {
-                HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-                modeR=0;
-            }
-            else
-            {
-                HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_RESET);
-                modeR=1;
-            }
-            lticks=ticks;
-        }
-    }
-    else{
-        HAL_GPIO_WritePin(LEDR_GPIO_Port,LEDR_Pin,GPIO_PIN_SET);
-        if(ticks-lticks>1000)
-        {
-            if(modeG==1)
-            {
-                HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_SET);
-                modeG=0;
-            }
-            else
-            {
-                HAL_GPIO_WritePin(LEDG_GPIO_Port,LEDG_Pin,GPIO_PIN_RESET);
-                modeG=1;
-            }
-            lticks=ticks;
-        }
-    }
-
 
     /* USER CODE END WHILE */
 
