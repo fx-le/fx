@@ -8,6 +8,7 @@
 #endif //LED10_1_M3508_H
 
 #include "main.h"
+#include "pid.h"
 class M3508_Motor {
 private:
     const float ratio_;             //电机减速比
@@ -22,4 +23,17 @@ private:
 public:
     explicit M3508_Motor(const float ratio) : ratio_(ratio) {};
     void canRxMsgCallback(const uint8_t rx_data[8]);
+    PID spid_, ppid_;
+    float target_angle_, fdb_angle_;
+    float target_speed_, fdb_speed_, feedforward_speed_;
+    float feedforward_intensity_, output_intensity_;
+    enum {
+        TORQUE,
+        SPEED,
+        POSITION_SPEED,
+    } control_method_;
+    void SetPosition(float target_position, float feedforward_speed, float feedforward_intensity);
+    void SetSpeed(float target_speed, float feedforward_intensity);
+    void SetIntensity(float intensity);
+    void handle(void);
 };
